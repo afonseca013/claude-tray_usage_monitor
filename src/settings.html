@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Configurações</title>
+    <link rel="stylesheet" href="shared.css" />
+    <link rel="stylesheet" href="settings.css" />
+  </head>
+  <body>
+    <div class="panel settings-panel">
+      <h1>Configurações</h1>
+
+      <section>
+        <h2>Claude</h2>
+        <p class="dim">
+          Gere um token com <code>claude setup-token</code> no terminal e cole abaixo.
+          Fica salvo no Gerenciador de Credenciais do Windows.
+        </p>
+        <div class="row">
+          <input type="password" id="claude-token" placeholder="sk-ant-oat01-…" />
+          <button id="claude-save">Salvar</button>
+          <button id="claude-clear">Remover</button>
+        </div>
+        <div class="dim" id="claude-status">—</div>
+      </section>
+
+      <section>
+        <h2>ChatGPT (opcional)</h2>
+        <p class="dim">
+          Sem uma API key de <b>Admin</b> da OpenAI Platform não há dado oficial de uso do
+          ChatGPT web. Se você tiver uma, cole abaixo para ver tokens/custo das últimas 24h.
+        </p>
+        <div class="row">
+          <input type="password" id="openai-key" placeholder="sk-admin-…" />
+          <button id="openai-save">Salvar</button>
+          <button id="openai-clear">Remover</button>
+        </div>
+        <div class="dim" id="openai-status">—</div>
+      </section>
+
+      <section>
+        <h2>Antigravity</h2>
+        <p class="dim">
+          O Google Antigravity não expõe API pública de quota — sem dados por enquanto.
+        </p>
+      </section>
+
+      <section>
+        <h2>Geral</h2>
+        <div class="row">
+          <label class="dim" for="poll-interval">Atualizar a cada</label>
+          <input type="number" id="poll-interval" min="1" max="60" style="width: 70px" />
+          <span class="dim">min</span>
+        </div>
+        <div class="row">
+          <label class="dim"><input type="checkbox" id="autostart" /> Iniciar com o Windows</label>
+        </div>
+      </section>
+    </div>
+    <script type="module" src="settings.js"></script>
+  </body>
+</html>

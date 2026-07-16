@@ -1,0 +1,116 @@
+#cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--unavailable);
+  flex-shrink: 0;
+}
+
+.dot.ok { background: var(--ok); }
+.dot.warning { background: var(--warning); }
+.dot.rejected { background: var(--rejected); animation: pulse 1.4s infinite; }
+.dot.error { background: var(--rejected); }
+.dot.unavailable { background: var(--unavailable); }
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.5); }
+  50% { box-shadow: 0 0 0 5px rgba(248, 113, 113, 0); }
+}
+
+.card-name {
+  font-weight: 600;
+  font-size: 13px;
+  flex-grow: 1;
+}
+
+.card-detail {
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+  font-size: 11px;
+}
+
+.bar-label {
+  width: 34px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+
+.meter {
+  flex-grow: 1;
+  display: flex;
+  gap: 2px;
+}
+
+.seg {
+  flex: 1;
+  height: 8px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  transition: background-color 0.3s ease;
+}
+
+.seg-off { background: rgba(255, 255, 255, 0.08); }
+.seg-green { background: var(--ok); }
+.seg-amber { background: var(--warning); }
+.seg-red { background: var(--rejected); }
+
+.meter.rejected .seg-off { animation: pulse-seg 1.4s infinite; }
+
+@keyframes pulse-seg {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.bar-pct {
+  width: 34px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.countdown {
+  font-variant-numeric: tabular-nums;
+}
+
+.chart {
+  display: block;
+  width: 100%;
+  height: 34px;
+  margin-top: 6px;
+  opacity: 0.9;
+}
+
+.heatmap {
+  display: block;
+  width: 100%;
+  height: 24px;
+  margin-top: 4px;
+  opacity: 0.9;
+}

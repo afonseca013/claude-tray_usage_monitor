@@ -1,0 +1,38 @@
+.settings-panel {
+  border-radius: 0;
+  overflow-y: auto;
+  gap: 16px;
+}
+
+section {
+  border-top: 1px solid var(--border);
+  padding-top: 10px;
+}
+
+section:first-of-type {
+  border-top: none;
+  padding-top: 0;
+}
+
+h2 {
+  font-size: 13px;
+  margin: 0 0 4px;
+}
+
+p {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.row input[type="password"],
+.row input[type="text"] {
+  flex-grow: 1;
+}
