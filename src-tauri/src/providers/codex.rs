@@ -54,8 +54,10 @@ async fn read_rate_limits() -> Result<UsageSnapshot, String> {
     // other platforms exec the binary directly.
     #[cfg(windows)]
     let mut command = {
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
         let mut c = Command::new("cmd");
         c.args(["/C", &bin, "app-server", "--stdio"]);
+        c.creation_flags(CREATE_NO_WINDOW);
         c
     };
     #[cfg(not(windows))]

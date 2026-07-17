@@ -10,6 +10,25 @@ mod tray;
 use state::AppState;
 use tauri::Manager;
 
+/// Windows autostart (Run registry key) can launch the app before
+/// explorer.exe has finished initializing the notification area — the tray
+/// icon API call still "succeeds" but the icon silently never shows, and
+/// only a manual relaunch (well past boot) fixes it. There's no reliable
+/// "shell is ready" signal to wait on, so as a pragmatic mitigation: if the
+/// system has been up for less than 90s (i.e. we're almost certainly a
+/// boot-time autostart launch, not a manual relaunch), give explorer a
+/// few seconds head start before creating the tray icon.
+#[cfg(windows)]
+fn delay_if_early_boot() {
+    extern "system" {
+        fn GetTickCount64() -> u64;
+    }
+    let uptime_ms = unsafe { GetTickCount64() };
+    if uptime_ms < 90_000 {
+        std::thread::sleep(std::time::Duration::from_secs(5));
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     env_logger::Builder::new()
@@ -51,6 +70,9 @@ pub fn run() {
             let app_data_dir = app.path().app_data_dir()?;
             let storage = storage::Storage::new(&app_data_dir)?;
             app.manage(AppState::new(storage));
+
+            #[cfg(windows)]
+            delay_if_early_boot();
 
             tray::setup(app.handle())?;
 

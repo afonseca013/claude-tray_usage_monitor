@@ -50,10 +50,17 @@ impl UsageProvider for AntigravityProvider {
 async fn discover_and_query() -> UsageSnapshot {
     let now = Utc::now().timestamp();
 
-    let output = Command::new("powershell")
+    let mut command = Command::new("powershell");
+    command
         .args(["-NoProfile", "-NonInteractive", "-Command", DISCOVER_SCRIPT])
         .stdin(Stdio::null())
-        .stderr(Stdio::null())
+        .stderr(Stdio::null());
+    #[cfg(windows)]
+    {
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+        command.creation_flags(CREATE_NO_WINDOW);
+    }
+    let output = command
         .output()
         .await;
 
