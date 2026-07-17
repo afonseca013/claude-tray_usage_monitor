@@ -1,8 +1,8 @@
 [package]
 name = "tray-usage-monitor"
 version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+description = "Windows tray monitor for Claude/ChatGPT rate-limit usage"
+authors = ["afonseca013"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
