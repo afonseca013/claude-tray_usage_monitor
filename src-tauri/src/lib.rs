@@ -12,6 +12,10 @@ use tauri::Manager;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    env_logger::Builder::new()
+        .filter_level(log::LevelFilter::Info)
+        .init();
+
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             // A second launch just re-shows the popup instead of opening a
