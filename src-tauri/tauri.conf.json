@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "tray-usage-monitor",
+  "productName": "Claude Token Monitor",
   "version": "0.1.0",
   "identifier": "com.afonseca013.tray-usage-monitor",
   "build": {

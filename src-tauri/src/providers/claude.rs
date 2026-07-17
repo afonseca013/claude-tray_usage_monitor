@@ -78,8 +78,21 @@ impl UsageProvider for ClaudeProvider {
 
         if !status_code.is_success() && percent_5h.is_none() && percent_7d.is_none() {
             let body_text = response.text().await.unwrap_or_default();
+
+            // 529 ("overloaded_error") means Anthropic's API is temporarily
+            // over capacity — transient, unrelated to the token. Surface it
+            // as "unavailable" (gray icon) instead of "error" (red/blinking
+            // critical icon), since the scheduler retries next poll anyway.
+            if status_code.as_u16() == 529 || body_text.contains("overloaded_error") {
+                log::warn!("Claude API sobrecarregada (529): {body_text}");
+                return UsageSnapshot::unavailable(
+                    self.id(),
+                    now,
+                    "Servidor da Anthropic sobrecarregado no momento — tentando novamente no próximo ciclo.",
+                );
+            }
+
             log::error!("Claude API error {status_code}: {body_text}");
-            eprintln!("[claude] API respondeu {status_code}: {body_text}");
             return UsageSnapshot::error(
                 self.id(),
                 now,
