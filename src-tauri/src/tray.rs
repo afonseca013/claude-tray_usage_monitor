@@ -114,25 +114,47 @@ fn show_settings(app: &AppHandle) {
     let _ = window.set_focus();
 }
 
+const PROVIDER_ORDER: [(&str, &str); 4] =
+    [("claude", "Claude"), ("codex", "Codex"), ("openai", "ChatGPT"), ("antigravity", "Antigravity")];
+
 /// Refreshes the tray tooltip and icon color from the latest known
 /// snapshots in `AppState`. The blink task (below) handles animating the
-/// critical state; this just sets the "steady" (non-dim) icon.
+/// critical state; this just sets the "steady" (non-dim) icon. The tooltip
+/// lists every provider that currently has a snapshot (i.e. is enabled and
+/// reachable) — same set the popup shows, so hovering the icon and opening
+/// the popup never disagree about what's active.
 pub fn update_from_state(app: &AppHandle) {
     let state = app.state::<AppState>();
     let latest = state.latest.lock().expect("latest mutex poisoned");
 
-    let claude = latest.get("claude");
-    let tooltip = match claude {
-        Some(s) => match (s.percent_5h, s.percent_7d) {
-            (Some(h5), Some(d7)) => format!("Claude: 5h {h5:.0}% · 7d {d7:.0}%"),
-            (Some(h5), None) => format!("Claude: 5h {h5:.0}%"),
-            (None, Some(d7)) => format!("Claude: 7d {d7:.0}%"),
-            (None, None) => "Claude: sem dados".to_string(),
-        },
-        None => "Claude: sem dados".to_string(),
+    let lines: Vec<String> = PROVIDER_ORDER
+        .iter()
+        .filter_map(|(id, label)| {
+            let snapshot = latest.get(*id)?;
+            if snapshot.status == UsageStatus::Unavailable {
+                return None;
+            }
+            let text = match (snapshot.percent_5h, snapshot.percent_7d) {
+                (Some(h5), Some(d7)) => format!("{label}: 5h {h5:.0}% · 7d {d7:.0}%"),
+                (Some(h5), None) => format!("{label}: 5h {h5:.0}%"),
+                (None, Some(d7)) => format!("{label}: 7d {d7:.0}%"),
+                (None, None) => match &snapshot.detail {
+                    Some(d) => format!("{label}: {d}"),
+                    None => format!("{label}: ativo"),
+                },
+            };
+            Some(text)
+        })
+        .collect();
+
+    let tooltip = if lines.is_empty() {
+        "Uso de IA — sem dados".to_string()
+    } else {
+        lines.join("\n")
     };
 
-    let level = claude
+    let level = latest
+        .get("claude")
         .map(|s| level_for(&s.status, s.worst_percent()))
         .unwrap_or(IconLevel::Unavailable);
     drop(latest);

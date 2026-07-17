@@ -8,11 +8,24 @@ use std::sync::Mutex;
 pub struct Settings {
     pub poll_interval_minutes: u64,
     pub autostart: bool,
+    #[serde(default = "default_true")]
+    pub codex_enabled: bool,
+    #[serde(default = "default_true")]
+    pub antigravity_enabled: bool,
+}
+
+fn default_true() -> bool {
+    true
 }
 
 impl Default for Settings {
     fn default() -> Self {
-        Self { poll_interval_minutes: 5, autostart: true }
+        Self {
+            poll_interval_minutes: 5,
+            autostart: true,
+            codex_enabled: true,
+            antigravity_enabled: true,
+        }
     }
 }
 

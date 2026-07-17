@@ -23,8 +23,11 @@ terminal ou o site. Inspirado no gadget físico
 - **ChatGPT** (opcional): mostra tokens/custo das últimas 24h se você tiver
   uma API key de *Admin* da OpenAI Platform (não existe endpoint público de
   "% de quota restante" para o ChatGPT web).
-- **Antigravity**: sem suporte por enquanto — o Google não expõe API pública
-  de quota para o produto.
+- **Codex** (opcional, chaveável em Configurações): mostra as janelas de 5h/7d
+  do Codex CLI. Ver seção [Codex](#codex) abaixo para os requisitos.
+- **Antigravity**: sem suporte funcional por enquanto (chaveável em
+  Configurações, mas a API local do Antigravity ainda retorna erro nesta
+  versão — fica para uma investigação futura).
 - Token e API keys ficam salvos no **Gerenciador de Credenciais do Windows**
   (via `keyring`), nunca em texto puro em disco.
 
@@ -36,6 +39,36 @@ rate-limit unificados que a Anthropic retorna em toda resposta
 (`anthropic-ratelimit-unified-5h-utilization` e `-7d-utilization`) — a mesma
 técnica usada pelo projeto de referência. Não é uma API de billing separada;
 é meio que um "efeito colateral" documentado das respostas normais da API.
+
+## Codex
+
+Diferente do Claude/ChatGPT, o Codex não pede token colado na UI — não há
+campo de configuração no popup de Configurações além do checkbox pra
+ligar/desligar o monitoramento. O provider lê o uso rodando
+`codex app-server --stdio` (o mesmo backend JSON-RPC que a UI oficial do
+Codex usa) e conversando com ele por stdin/stdout.
+
+Requisitos para o card aparecer:
+
+- **Codex CLI instalado e no PATH.** Ex.: `npm install -g @openai/codex`.
+- **Autenticado**: `codex login` (ou já estar logado via ChatGPT — confirme
+  com `codex login status`).
+- Se o CLI não for encontrado ou a autenticação não estiver feita, o
+  provider retorna "unavailable" e o card fica **oculto** no popup (mesmo
+  comportamento do ChatGPT sem API key) — não aparece erro nenhum, então se
+  o card não aparecer, o primeiro passo é rodar `codex login status` no
+  terminal.
+
+**Detalhe de plataforma (Windows):** a instalação global via `npm install -g`
+cria um shim `.cmd`, e `CreateProcess`/`std::process::Command` do Rust não
+executa `.cmd` diretamente (mesma limitação conhecida do `child_process.spawn`
+do Node sem `shell:true`). Por isso o provider roteia o spawn por
+`cmd /C codex app-server --stdio` no Windows — se um dia trocar a forma de
+instalar o Codex (ex. binário standalone `.exe`), esse detalhe deixa de ser
+necessário mas não atrapalha.
+
+Pode ser desligado a qualquer momento em Configurações → Codex → "Monitorar
+Codex" — desligado, o app nunca chega a spawnar o processo `codex`.
 
 ## Instalação
 

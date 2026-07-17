@@ -65,6 +65,7 @@ pub fn check_and_notify(app: &AppHandle, snapshot: &UsageSnapshot) {
 fn provider_label(provider: &str) -> &str {
     match provider {
         "claude" => "Claude",
+        "codex" => "Codex",
         "openai" => "ChatGPT",
         "antigravity" => "Antigravity",
         other => other,

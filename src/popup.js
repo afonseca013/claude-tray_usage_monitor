@@ -33,6 +33,7 @@ async function invoke(cmd, args) {
 
 const PROVIDER_LABELS = {
   claude: "Claude",
+  codex: "Codex",
   openai: "ChatGPT",
   antigravity: "Antigravity",
 };
@@ -109,7 +110,7 @@ function renderCard(snapshot) {
 }
 
 function render() {
-  const order = ["claude", "openai", "antigravity"];
+  const order = ["claude", "codex", "openai", "antigravity"];
   const items = order
     .map((id) => snapshots.get(id))
     .filter((s) => s && s.status !== "unavailable");

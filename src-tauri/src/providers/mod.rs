@@ -1,9 +1,11 @@
 mod antigravity;
 mod claude;
+mod codex;
 mod openai;
 
 pub use antigravity::AntigravityProvider;
 pub use claude::ClaudeProvider;
+pub use codex::CodexProvider;
 pub use openai::OpenAiProvider;
 
 use serde::{Deserialize, Serialize};

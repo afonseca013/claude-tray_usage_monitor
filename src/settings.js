@@ -25,6 +25,8 @@ const openaiKeyEl = document.getElementById("openai-key");
 const openaiStatusEl = document.getElementById("openai-status");
 const pollIntervalEl = document.getElementById("poll-interval");
 const autostartEl = document.getElementById("autostart");
+const codexEnabledEl = document.getElementById("codex-enabled");
+const antigravityEnabledEl = document.getElementById("antigravity-enabled");
 
 async function refreshClaudeStatus() {
   const has = await invoke("has_claude_token");
@@ -101,12 +103,28 @@ autostartEl.addEventListener("change", async () => {
   await invoke("set_settings", { settings });
 });
 
+codexEnabledEl.addEventListener("change", async () => {
+  const settings = await invoke("get_settings");
+  settings.codex_enabled = codexEnabledEl.checked;
+  await invoke("set_settings", { settings });
+  invoke("refresh_now");
+});
+
+antigravityEnabledEl.addEventListener("change", async () => {
+  const settings = await invoke("get_settings");
+  settings.antigravity_enabled = antigravityEnabledEl.checked;
+  await invoke("set_settings", { settings });
+  invoke("refresh_now");
+});
+
 async function init() {
   await refreshClaudeStatus();
   await refreshOpenAiStatus();
 
   const settings = await invoke("get_settings");
   pollIntervalEl.value = settings.poll_interval_minutes;
+  codexEnabledEl.checked = settings.codex_enabled;
+  antigravityEnabledEl.checked = settings.antigravity_enabled;
 
   try {
     autostartEl.checked = await invoke("plugin:autostart|is_enabled");
