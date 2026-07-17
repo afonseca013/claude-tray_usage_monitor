@@ -10,7 +10,7 @@ pub struct Settings {
     pub autostart: bool,
     #[serde(default = "default_true")]
     pub codex_enabled: bool,
-    #[serde(default = "default_true")]
+    #[serde(default)]
     pub antigravity_enabled: bool,
 }
 
@@ -24,7 +24,11 @@ impl Default for Settings {
             poll_interval_minutes: 5,
             autostart: true,
             codex_enabled: true,
-            antigravity_enabled: true,
+            // The local API it depends on currently 500s on every account
+            // tested (see providers/antigravity.rs) — off by default until
+            // that's understood, so the app isn't spawning a PowerShell
+            // process every poll cycle for a provider that can't work yet.
+            antigravity_enabled: false,
         }
     }
 }
