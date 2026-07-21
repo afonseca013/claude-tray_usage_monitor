@@ -21,6 +21,7 @@ async function invoke(cmd, args) {
 
 const claudeTokenEl = document.getElementById("claude-token");
 const claudeStatusEl = document.getElementById("claude-status");
+const claudeTokenWarningEl = document.getElementById("claude-token-warning");
 const openaiKeyEl = document.getElementById("openai-key");
 const openaiStatusEl = document.getElementById("openai-status");
 const pollIntervalEl = document.getElementById("poll-interval");
@@ -31,6 +32,22 @@ const antigravityEnabledEl = document.getElementById("antigravity-enabled");
 async function refreshClaudeStatus() {
   const has = await invoke("has_claude_token");
   claudeStatusEl.textContent = has ? "Token configurado." : "Nenhum token configurado ainda.";
+}
+
+// The token can look "configured" (it's saved) while Anthropic is actively
+// rejecting it (expired/revoked) — that only shows up as an error status on
+// the latest snapshot, not in has_claude_token. Surface it here so the user
+// isn't left staring at a tray icon that just quietly stopped updating.
+async function refreshClaudeTokenWarning() {
+  const snapshots = await invoke("get_latest_snapshots");
+  const claude = snapshots.find((s) => s.provider === "claude");
+  if (claude && claude.status === "error") {
+    const fallback = "O token do Claude parece inválido ou expirado. Gere um novo com claude setup-token e cole acima.";
+    claudeTokenWarningEl.textContent = `⚠ ${claude.detail ?? fallback}`;
+    claudeTokenWarningEl.hidden = false;
+  } else {
+    claudeTokenWarningEl.hidden = true;
+  }
 }
 
 async function refreshOpenAiStatus() {
@@ -45,7 +62,8 @@ document.getElementById("claude-save").addEventListener("click", async () => {
     await invoke("set_claude_token", { token });
     claudeTokenEl.value = "";
     await refreshClaudeStatus();
-    invoke("refresh_now");
+    await invoke("refresh_now");
+    await refreshClaudeTokenWarning();
   } catch (e) {
     claudeStatusEl.textContent = `Erro ao salvar: ${e}`;
   }
@@ -119,7 +137,14 @@ antigravityEnabledEl.addEventListener("change", async () => {
 
 async function init() {
   await refreshClaudeStatus();
+  await refreshClaudeTokenWarning();
   await refreshOpenAiStatus();
+
+  window.__TAURI__.event.listen("usage-updated", (event) => {
+    if (event.payload?.provider === "claude") {
+      refreshClaudeTokenWarning();
+    }
+  });
 
   const settings = await invoke("get_settings");
   pollIntervalEl.value = settings.poll_interval_minutes;

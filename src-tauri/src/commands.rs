@@ -46,7 +46,7 @@ pub fn clear_claude_token() -> Result<(), String> {
 
 #[tauri::command]
 pub fn has_claude_token() -> bool {
-    auth::get_claude_token().is_some()
+    matches!(auth::get_claude_token(), Ok(Some(_)))
 }
 
 #[tauri::command]

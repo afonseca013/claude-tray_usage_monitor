@@ -27,13 +27,25 @@ impl UsageProvider for ClaudeProvider {
         let now = Utc::now().timestamp();
 
         let token = match auth::get_claude_token() {
-            Some(t) => t,
-            None => {
+            Ok(Some(t)) => t,
+            Ok(None) => {
                 return UsageSnapshot::unavailable(
                     self.id(),
                     now,
                     "Token OAuth não configurado. Rode `claude setup-token` e cole o token nas Configurações.",
                 )
+            }
+            Err(e) => {
+                // The token IS saved — the OS credential store just couldn't
+                // be read this cycle (locked session, Credential Manager
+                // hiccup). Don't claim it's "not configured"; that sends
+                // the user chasing a re-auth that isn't the problem.
+                log::warn!("Falha lendo token do Claude no cofre de credenciais: {e}");
+                return UsageSnapshot::unavailable(
+                    self.id(),
+                    now,
+                    &format!("Não foi possível acessar o cofre de credenciais do Windows agora ({e}). Tentando novamente no próximo ciclo."),
+                );
             }
         };
 

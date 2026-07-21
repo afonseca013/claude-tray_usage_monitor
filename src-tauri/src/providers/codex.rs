@@ -127,14 +127,43 @@ async fn read_rate_limits() -> Result<UsageSnapshot, String> {
         .and_then(|r| r.get("rateLimits"))
         .ok_or_else(|| "Resposta do codex app-server sem rateLimits.".to_string())?;
 
-    let window = |key: &str, field: &str| -> Option<f64> {
-        limits.get(key)?.get(field)?.as_f64()
+    // Codex names its windows "primary"/"secondary", but that's just an
+    // ordering, not a fixed 5h/7d split — an account can come back with a
+    // single "primary" window whose windowDurationMins is 10080 (7 days),
+    // which would silently render as the 5h bar if we trusted the field
+    // name. Classify each window by its actual duration instead: anything
+    // over half a day is treated as the long (7d) bucket.
+    const LONG_WINDOW_THRESHOLD_MINS: i64 = 12 * 60;
+
+    struct Window {
+        percent: Option<f32>,
+        reset: Option<i64>,
+        duration_mins: i64,
+    }
+
+    let read_window = |key: &str| -> Option<Window> {
+        let w = limits.get(key)?;
+        Some(Window {
+            percent: w.get("usedPercent").and_then(Value::as_f64).map(|v| v as f32),
+            reset: w.get("resetsAt").and_then(Value::as_i64),
+            duration_mins: w.get("windowDurationMins").and_then(Value::as_i64).unwrap_or(0),
+        })
     };
 
-    let percent_5h = window("primary", "usedPercent").map(|v| v as f32);
-    let reset_5h = limits.get("primary").and_then(|w| w.get("resetsAt")).and_then(Value::as_i64);
-    let percent_7d = window("secondary", "usedPercent").map(|v| v as f32);
-    let reset_7d = limits.get("secondary").and_then(|w| w.get("resetsAt")).and_then(Value::as_i64);
+    let mut short: Option<Window> = None;
+    let mut long: Option<Window> = None;
+    for w in [read_window("primary"), read_window("secondary")].into_iter().flatten() {
+        if w.duration_mins > LONG_WINDOW_THRESHOLD_MINS {
+            long = Some(w);
+        } else {
+            short = Some(w);
+        }
+    }
+
+    let percent_5h = short.as_ref().and_then(|w| w.percent);
+    let reset_5h = short.as_ref().and_then(|w| w.reset);
+    let percent_7d = long.as_ref().and_then(|w| w.percent);
+    let reset_7d = long.as_ref().and_then(|w| w.reset);
 
     // Codex signals a hit limit via `rateLimitReachedType`; there's no
     // separate "warning" flag like Anthropic's header, so anything short of
